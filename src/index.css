@@ -1,0 +1,13 @@
+.question-block {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-template-columns: auto auto auto auto;
+}
+
+.question {
+  grid-column: 1 / 5;
+}
+
+h5 {
+  border: 1px solid black;
+}
