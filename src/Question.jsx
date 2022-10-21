@@ -21,23 +21,38 @@ export default function Question(props) {
   }
 
   let option = props.options.map((item) => {
-    let style = { backgroundColor: item.isHeld ? "green" : "aqua" };
+    function selectedClass() {
+      if (props.gameOn) {
+        return item.isHeld ? "selected" : "";
+      } else {
+        if (item.correct) {
+          return "correctAnswer";
+        } else if (item.isHeld === true && item.correct === false) {
+          return "wrongAnswer";
+        } else {
+          return "notSelected";
+        }
+      }
+    }
 
     return (
-      <h5
-        style={style}
+      <li
+        className={"choices " + selectedClass()}
         key={nanoid()}
-        onClick={() => toggle(item.id, props.id)}
+        onClick={() => {
+          return props.gameOn ? toggle(item.id, props.id) : "";
+        }}
       >
         {decode(item.value)}
-      </h5>
+      </li>
     );
   });
 
   return (
     <div className="question-block">
-      <h3 className="question">{decode(props.ques)}</h3>
-      {option}
+      <p className="question">{decode(props.ques)}</p>
+      <ul className="optionBlock">{option}</ul>
+      
     </div>
   );
 }
