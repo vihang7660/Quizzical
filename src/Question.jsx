@@ -1,28 +1,21 @@
 import React from "react";
 import { decode } from "html-entities";
 import { nanoid } from "nanoid";
+import { useContextState } from "./context";
 
 export default function Question(props) {
+  const { state, dispatch } = useContextState();
   function toggle(id, Qid) {
-    props.setInformation((prevState) =>
-      prevState.map((item) => {
-        return item.id === Qid
-          ? {
-              ...item,
-              options: item.options.map((data) =>
-                data.id === id
-                  ? { ...data, isHeld: !data.isHeld }
-                  : { ...data, isHeld: false }
-              ),
-            }
-          : item;
-      })
-    );
+    dispatch({
+      type: "selectingAnswer",
+      id,
+      Qid,
+    });
   }
 
   let option = props.options.map((item) => {
     function selectedClass() {
-      if (props.gameOn) {
+      if (state.gameOn) {
         return item.isHeld ? "selected" : "";
       } else {
         if (item.correct) {
@@ -40,7 +33,7 @@ export default function Question(props) {
         className={"choices " + selectedClass()}
         key={nanoid()}
         onClick={() => {
-          return props.gameOn ? toggle(item.id, props.id) : "";
+          return state.gameOn ? toggle(item.id, props.id) : "";
         }}
       >
         {decode(item.value)}
@@ -52,7 +45,6 @@ export default function Question(props) {
     <div className="question-block">
       <p className="question">{decode(props.ques)}</p>
       <ul className="optionBlock">{option}</ul>
-      
     </div>
   );
 }

@@ -3,23 +3,18 @@ import Question from "./Question";
 import { nanoid } from "nanoid";
 import blobTop from "./assets/blob.png";
 import blobBottom from "./assets/blob2.png";
+import { useContextState } from "./context";
 
 function App() {
-  const [information, setInformation] = React.useState([]);
-
-  const [count, setCount] = React.useState(0);
-
-  const [gameOn, setGameOn] = React.useState(true);
-
-  const [load, setLoad] = React.useState(true);
+  const { state, dispatch } = useContextState();
 
   React.useEffect(() => {
-    if (gameOn === true) {
-      setLoad(true);
+    if (state.gameOn === true) {
+      dispatch({ type: "loadingOn" });
       fetch("https://opentdb.com/api.php?amount=5&difficulty=easy")
         .then((resp) => resp.json())
         .then((data) => {
-          setLoad(false);
+          dispatch({ type: "loadingOff" });
           let details = data.results.map((item) => {
             item.id = nanoid();
             item.options = item.incorrect_answers.map((data) => {
@@ -40,21 +35,20 @@ function App() {
             shuffle(item.options);
             return item;
           });
-          setInformation(details);
+          dispatch({ type: "fetchedData", data: details });
         });
     }
-  }, [gameOn]);
-
-  console.log(information.map((item) => item.correct_answer));
+  }, [state.gameOn]);
 
   function checkAnswers() {
-    setCount(() => {
-      let arr = information.filter(
-        (item) =>
-          item.correct_answer ===
-          item.options.filter((data) => data.isHeld).map((ans) => ans.value)[0]
-      );
-      return arr.length;
+    let arr = state.information.filter(
+      (item) =>
+        item.correct_answer ===
+        item.options.filter((data) => data.isHeld).map((ans) => ans.value)[0]
+    );
+    dispatch({
+      type: "numberOfAnswers",
+      data: arr.length,
     });
   }
 
@@ -65,21 +59,18 @@ function App() {
     }
   }
 
-  let info = information.map((item) => {
+  let info = state.information.map((item) => {
     return (
       <Question
         ques={item.question}
         options={item.options}
-        setInformation={setInformation}
-        gameOn={gameOn}
-        setGameOn={setGameOn}
         id={item.id}
-        key={nanoid()}
+        key={item.id}
       />
     );
   });
 
-  return load ? (
+  return state.load ? (
     <div className="loadBox">
       <div className="lds-hourglass"></div>
     </div>
@@ -89,15 +80,15 @@ function App() {
       <img className="blobBottom" src={blobBottom} alt="blobBottom" />
       {info}
       <div className="infoBlock">
-        <h2>{gameOn || `You gave ${count} answers correctly`}</h2>
+        <h2>{state.gameOn || `You gave ${state.count} answers correctly`}</h2>
         <button
           className="check"
           onClick={() => {
             checkAnswers();
-            setGameOn((prevState) => !prevState);
+            dispatch({ type: "togglingGameMode" });
           }}
         >
-          {gameOn ? "Check Answers" : "Play Again"}
+          {state.gameOn ? "Check Answers" : "Play Again"}
         </button>
       </div>
     </div>
