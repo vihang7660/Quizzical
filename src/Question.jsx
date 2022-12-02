@@ -1,10 +1,10 @@
 import React from "react";
 import { decode } from "html-entities";
-import { nanoid } from "nanoid";
 import { useContextState } from "./context";
+import Option from "./Option";
 
 export default function Question(props) {
-  const { state, dispatch } = useContextState();
+  const { dispatch } = useContextState();
   function toggle(id, Qid) {
     dispatch({
       type: "selectingAnswer",
@@ -12,33 +12,9 @@ export default function Question(props) {
       Qid,
     });
   }
-
+  console.log(props.options);
   let option = props.options.map((item) => {
-    function selectedClass() {
-      if (state.gameOn) {
-        return item.isHeld ? "selected" : "";
-      } else {
-        if (item.correct) {
-          return "correctAnswer";
-        } else if (item.isHeld === true && item.correct === false) {
-          return "wrongAnswer";
-        } else {
-          return "notSelected";
-        }
-      }
-    }
-
-    return (
-      <li
-        className={"choices " + selectedClass()}
-        key={nanoid()}
-        onClick={() => {
-          return state.gameOn ? toggle(item.id, props.id) : "";
-        }}
-      >
-        {decode(item.value)}
-      </li>
-    );
+    return <Option qId={props.id} toggle={toggle} key={item.id} {...item} />;
   });
 
   return (
