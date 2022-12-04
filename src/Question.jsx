@@ -12,7 +12,6 @@ export default function Question(props) {
       Qid,
     });
   }
-  console.log(props.options);
   let option = props.options.map((item) => {
     return <Option qId={props.id} toggle={toggle} key={item.id} {...item} />;
   });

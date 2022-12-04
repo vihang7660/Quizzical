@@ -42,6 +42,13 @@ function reducer(state, action) {
           : item;
       }),
     };
+  } else if (action.type === "togglingStartPageOff") {
+    return { ...state, isStartPage: false };
+  } else if (action.type === "changingFormData") {
+    return {
+      ...state,
+      formdata: { ...state.formdata, [action.name]: action.value },
+    };
   }
 }
 
@@ -50,4 +57,7 @@ const initialState = {
   count: 0,
   gameOn: true,
   load: true,
+  isStartPage: true,
+  formdata: { category: "", amount: "amount=5", difficulty: "&difficulty=easy" },
+  apiUrl: "https://opentdb.com/api.php?",
 };

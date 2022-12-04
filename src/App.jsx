@@ -4,14 +4,24 @@ import { nanoid } from "nanoid";
 import blobTop from "./assets/blob.png";
 import blobBottom from "./assets/blob2.png";
 import { useContextState } from "./context";
+import StartPage from "./Start";
 
 function App() {
   const { state, dispatch } = useContextState();
-
   React.useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
     if (state.gameOn === true) {
       dispatch({ type: "loadingOn" });
-      fetch("https://opentdb.com/api.php?amount=5&difficulty=easy")
+      fetch(
+        state.apiUrl +
+          state.formdata.amount +
+          state.formdata.difficulty +
+          state.formdata.category,
+        {
+          signal,
+        }
+      )
         .then((resp) => resp.json())
         .then((data) => {
           dispatch({ type: "loadingOff" });
@@ -36,9 +46,46 @@ function App() {
             return item;
           });
           dispatch({ type: "fetchedData", data: details });
+        })
+        .catch(() => {
+          console.log("unable to fetch");
+          fetch("https://opentdb.com/api.php?amount=10", { signal })
+            .then((resp) => resp.json())
+            .then((data) => {
+              dispatch({ type: "loadingOff" });
+              let details = data.results.map((item) => {
+                item.id = nanoid();
+                item.options = item.incorrect_answers.map((data) => {
+                  let dataInfo = {
+                    isHeld: false,
+                    value: data,
+                    correct: false,
+                    id: nanoid(),
+                  };
+                  return dataInfo;
+                });
+                item.options.push({
+                  isHeld: false,
+                  value: item.correct_answer,
+                  correct: true,
+                  id: nanoid(),
+                });
+                shuffle(item.options);
+                return item;
+              });
+              dispatch({ type: "fetchedData", data: details });
+            });
         });
+      return () => {
+        controller.abort();
+      };
     }
-  }, [state.gameOn]);
+  }, [state.gameOn, state.formdata]);
+
+
+  if (state.isStartPage) {
+    return <StartPage />;
+  }
 
   function checkAnswers() {
     let arr = state.information.filter(
